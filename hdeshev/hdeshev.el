@@ -23,6 +23,9 @@
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
 
 (if (fboundp 'menu-bar-mode) (menu-bar-mode 1))
+
+(color-theme-zenburn)
+(global-set-key (kbd "<f4>") 'buffer-menu)
 ;; MINI HOWTO: 
 ;; Open .scala file. M-x ensime (once per project)
 (provide 'hdeshev)

@@ -1,3 +1,4 @@
+
 ;;; init.el --- Where all the magic begins
 ;;
 ;; Part of the Emacs Starter Kit
@@ -74,3 +75,6 @@
   (mapc #'load (directory-files user-specific-dir nil ".*el$")))
 
 ;;; init.el ends here
+
+(add-to-list 'load-path "~/.emacs.d/hdeshev")
+(require 'hdeshev)

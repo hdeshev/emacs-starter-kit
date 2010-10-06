@@ -32,6 +32,7 @@
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-o") 'open-next-line)
 (global-set-key (kbd "M-o") 'open-previous-line)
+(global-set-key (kbd "<f2>") 'find-file-at-point)
 
 ;; Open .scala file. M-x ensime (once per project)
 (provide 'hdeshev)

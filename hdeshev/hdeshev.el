@@ -17,6 +17,7 @@
 (add-to-list 'load-path "~/.emacs.d/hdeshev/ensime/elisp/")
 (require 'ensime)
 
+(require 'open-line)
 ;; This step causes the ensime-mode to be started whenever
 ;; scala-mode is started for a buffer. You may have to customize this step
 ;; if you're not using the standard scala mode.
@@ -25,7 +26,12 @@
 (if (fboundp 'menu-bar-mode) (menu-bar-mode 1))
 
 (color-theme-zenburn)
+
 (global-set-key (kbd "<f4>") 'buffer-menu)
-;; MINI HOWTO: 
+(global-set-key (kbd "C-x C-p") 'find-file-at-point)
+(global-set-key (kbd "C-z") 'undo)
+(global-set-key (kbd "C-o") 'open-next-line)
+(global-set-key (kbd "M-o") 'open-previous-line)
+
 ;; Open .scala file. M-x ensime (once per project)
 (provide 'hdeshev)

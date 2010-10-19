@@ -1,3 +1,8 @@
+;disable backup
+(setq backup-inhibited t)
+;disable auto save
+(setq auto-save-default nil)
+
 (add-to-list 'load-path "~/.emacs.d/hdeshev/yasnippet")
 (require 'yasnippet-bundle)
 
@@ -34,5 +39,6 @@
 (global-set-key (kbd "M-o") 'open-previous-line)
 (global-set-key (kbd "<f2>") 'find-file-at-point)
 
+(server-start)
 ;; Open .scala file. M-x ensime (once per project)
 (provide 'hdeshev)

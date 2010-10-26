@@ -3,6 +3,8 @@
 ;disable auto save
 (setq auto-save-default nil)
 
+(setq-default fill-column 100)
+
 (add-to-list 'load-path "~/.emacs.d/hdeshev/yasnippet")
 (require 'yasnippet-bundle)
 
@@ -32,12 +34,16 @@
 
 (color-theme-zenburn)
 
+(global-set-key (kbd "<f1>") 'speedbar)
 (global-set-key (kbd "<f4>") 'buffer-menu)
 (global-set-key (kbd "C-x C-p") 'find-file-at-point)
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-o") 'open-next-line)
 (global-set-key (kbd "M-o") 'open-previous-line)
 (global-set-key (kbd "<f2>") 'find-file-at-point)
+
+(setq rcirc-default-nick "hdeshev")
+(setq rcirc-default-full-name "Hristo Deshev")
 
 (server-start)
 ;; Open .scala file. M-x ensime (once per project)

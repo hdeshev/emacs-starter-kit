@@ -4,6 +4,7 @@
 (setq auto-save-default nil)
 
 (setq-default fill-column 100)
+(setq-default lua-indent-level 4)
 
 (add-to-list 'load-path "~/.emacs.d/hdeshev/yasnippet")
 (require 'yasnippet-bundle)

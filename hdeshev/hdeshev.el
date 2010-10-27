@@ -11,6 +11,9 @@
 (add-to-list 'load-path "~/.emacs.d/hdeshev/scala")
 (require 'scala-mode-auto)
 
+(add-to-list 'load-path "~/.emacs.d/hdeshev/php-mode")
+(require 'php-mode)
+
 ;(setq yas/my-directory "D:/utils/emacs/scala/contrib/yasnippet/snippets")
 ;(yas/load-directory yas/my-directory)
 

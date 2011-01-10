@@ -50,6 +50,9 @@
 (setq rcirc-default-full-name "Hristo Deshev")
 
 (server-start)
+;; Get rid of the 'Buffer blah-blah still has clients' prompt
+(remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function)
+
 ;; Open .scala file. M-x ensime (once per project)
 (provide 'hdeshev)
 

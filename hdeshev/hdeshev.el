@@ -52,3 +52,6 @@
 (server-start)
 ;; Open .scala file. M-x ensime (once per project)
 (provide 'hdeshev)
+
+;; Set the frame title, so that we can easily find and focus the Emacs window (autokey!)
+(modify-frame-parameters nil (list (cons 'name "Emacs")))

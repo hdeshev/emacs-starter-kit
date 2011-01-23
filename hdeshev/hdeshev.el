@@ -58,3 +58,7 @@
 
 ;; Set the frame title, so that we can easily find and focus the Emacs window (autokey!)
 (modify-frame-parameters nil (list (cons 'name "Emacs")))
+
+;; Do not confirm file creation
+(setq confirm-nonexistent-file-or-buffer nil)
+(setq ido-create-new-buffer 'always)

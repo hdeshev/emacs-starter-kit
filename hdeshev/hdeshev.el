@@ -46,6 +46,13 @@
 (global-set-key (kbd "M-o") 'open-previous-line)
 (global-set-key (kbd "<f2>") 'find-file-at-point)
 
+(defun save-and-build-scala()
+  (interactive)
+  (save-some-buffers 't)
+  (ensime-builder-build))
+
+(global-set-key (kbd "<f7>") 'save-and-build-scala)
+
 (setq rcirc-default-nick "hdeshev")
 (setq rcirc-default-full-name "Hristo Deshev")
 
@@ -62,3 +69,5 @@
 ;; Do not confirm file creation
 (setq confirm-nonexistent-file-or-buffer nil)
 (setq ido-create-new-buffer 'always)
+
+(setq exec-path (append exec-path (list "/opt/sbt" "/opt/scala/bin" )))

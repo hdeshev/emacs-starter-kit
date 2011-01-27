@@ -64,7 +64,7 @@
 (provide 'hdeshev)
 
 ;; Set the frame title, so that we can easily find and focus the Emacs window (autokey!)
-(modify-frame-parameters nil (list (cons 'name "Emacs")))
+(modify-frame-parameters nil (list (cons 'name "hdeshev - emacs")))
 
 ;; Do not confirm file creation
 (setq confirm-nonexistent-file-or-buffer nil)

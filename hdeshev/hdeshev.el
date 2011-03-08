@@ -38,24 +38,45 @@
 
 (color-theme-zenburn)
 
+;(add-to-list 'load-path "/path/to/full-ack")
+(setq ack-executable (executable-find "ack-grep"))
+(autoload 'ack-same "full-ack" nil t)
+(autoload 'ack "full-ack" nil t)
+(autoload 'ack-find-same-file "full-ack" nil t)
+(autoload 'ack-find-file "full-ack" nil t)
+
 (global-set-key (kbd "<f1>") 'speedbar)
+(global-set-key (kbd "<f2>") 'find-file-at-point)
 (global-set-key (kbd "<f4>") 'buffer-menu)
+(global-set-key (kbd "<f2>") 'find-file-at-point)
+(global-set-key (kbd "<f3>") 'ack)
 (global-set-key (kbd "C-x C-p") 'find-file-at-point)
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-o") 'open-next-line)
 (global-set-key (kbd "M-o") 'open-previous-line)
-(global-set-key (kbd "<f2>") 'find-file-at-point)
+
+(global-set-key (kbd "<f8>") 'next-error)
+(global-set-key (kbd "<S-f8>") 'previous-error)
 
 (defun save-and-build-scala()
   (interactive)
   (save-some-buffers 't)
   (ensime-builder-build))
 
+(defun ack-shortcuts()
+  (interactive)
+
+  (global-set-key (kbd "<M-f3>") 'ensime-search)
+  (global-set-key (kbd "<C-f3>") 'ack)
+  (global-set-key (kbd "<f3>") 'ack-find-file))
+
 (global-set-key (kbd "<f7>") 'save-and-build-scala)
+;; (global-set-key (kbd "<C-x s>") 'save-all)
 
 (setq rcirc-default-nick "hdeshev")
 (setq rcirc-default-full-name "Hristo Deshev")
 
+(server-force-delete)
 (server-start)
 ;; Get rid of the 'Buffer blah-blah still has clients' prompt
 (remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function)

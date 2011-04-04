@@ -161,6 +161,12 @@ argument is supplied) is a .scala or .java file."
     (when file
       (integerp (string-match "\\(?:\\.scala$\\|\\.java$\\)" file)))))
 
+(defun ensime-visiting-java-file-p ()
+  (string-match "\\.java$" buffer-file-name))
+
+(defun ensime-visiting-scala-file-p ()
+  (string-match "\\.scala$" buffer-file-name))
+
 (defun ensime-scala-mode-hook ()
   "Conveniance hook function that just starts ensime-mode."
   (ensime-mode 1))
@@ -242,6 +248,7 @@ Do not show 'Writing..' message."
       (define-key prefix-map (kbd "C-r l") 'ensime-refactor-extract-local)
       (define-key prefix-map (kbd "C-r m") 'ensime-refactor-extract-method)
       (define-key prefix-map (kbd "C-r i") 'ensime-refactor-inline-local)
+      (define-key prefix-map (kbd "C-r t") 'ensime-import-type-at-point)
 
       (define-key prefix-map (kbd "C-b b") 'ensime-builder-build)
       (define-key prefix-map (kbd "C-b r") 'ensime-builder-rebuild)
@@ -289,6 +296,7 @@ Do not show 'Writing..' message."
 
     ("Refactor"
      ["Organize imports" ensime-refactor-organize-imports]
+     ["Import type at point" ensime-import-type-at-point]
      ["Rename" ensime-refactor-rename]
      ["Extract local val" ensime-refactor-extract-local]
      ["Extract method" ensime-refactor-extract-method]
@@ -1038,7 +1046,7 @@ absolute path to f."
   "files is a list of buffer-file-names to revert or lists of the form
  (visited-file-name disk-file-name) where buffer visiting visited-file-name
  will be reverted to the state of disk-file-name."
-  (let ((line (ensime-current-line)))
+  (let ((pt (point)))
     (save-excursion
       (dolist (f files)
 	(let* ((dest (cond ((stringp f) f)
@@ -1052,7 +1060,7 @@ absolute path to f."
 	      (when typecheck
 		(ensime-typecheck-current-file)))
 	    ))))
-    (goto-line line)
+    (goto-char pt)
     ))
 
 (defvar ensime-net-processes nil
@@ -2037,7 +2045,7 @@ any buffer visiting the given file."
 	 (next-note (ensime-next-note-in-current-buffer notes forward)))
     (if next-note
 	(progn
-	  (goto-char (ensime-note-beg next-note))
+	  (goto-char (+ ensime-ch-fix (ensime-note-beg next-note)))
 	  (message (ensime-note-message next-note)))
       (message (concat
 		"No more compilation issues in this buffer. "
@@ -2417,6 +2425,88 @@ any buffer visiting the given file."
 	  (message "No issues found."))))
    ))
 
+
+(defun ensime-sym-at-point ()
+  "Return information about the symbol at point. If not looking at a
+ symbol, return nil."
+  (let ((start nil)
+	(end nil))
+
+    (when (thing-at-point 'symbol)
+
+      (save-excursion
+	(search-backward-regexp "\\W" nil t)
+	(setq start (+ (point) 1)))
+      (save-excursion
+	(search-forward-regexp "\\W" nil t)
+	(setq end (- (point) 1)))
+      (list :start start
+	    :end end
+	    :name (buffer-substring-no-properties start end)))))
+
+
+
+(defun ensime-insert-import (qualified-name)
+  "A simple, hacky import insertion."
+  (save-excursion
+    (goto-char (point-min))
+    (search-forward-regexp "^\\s-*package\\s-" nil t)
+    (goto-char (point-at-eol))
+
+    ;; Advance past all imports that should sort before
+    ;; the new one lexicographically.
+    (while (progn
+	     (if (looking-at "[\n\t ]*import\\s-\\(.+\\)\n")
+		 (let ((imported-name (match-string 1)))
+		   (string< imported-name qualified-name)
+		   )))
+      (search-forward-regexp "import" nil t)
+      (goto-char (point-at-eol)))
+
+    (newline)
+    (insert (format (cond ((ensime-visiting-scala-file-p) "import %s")
+			  ((ensime-visiting-java-file-p) "import %s;"))
+		    qualified-name))
+    (indent-region (point-at-bol) (point-at-eol))))
+
+
+
+(defun ensime-import-type-at-point (&optional non-interactive)
+  "Suggest possible imports of the qualified name at point.
+ If user selects and import, add it to the import list."
+  (interactive)
+  (let* ((sym (ensime-sym-at-point))
+	 (name (plist-get sym :name))
+	 (name-start (plist-get sym :start))
+	 (name-end (plist-get sym :end))
+	 (suggestions (ensime-rpc-import-suggestions-at-point (list name) 10)))
+    (when suggestions
+      (let* ((names (mapcar
+		     (lambda (s)
+		       (propertize (plist-get s :name)
+				   'local-name
+				   (plist-get s :local-name)))
+		     (apply 'append suggestions)))
+	     (selected-name
+	      (if non-interactive (car names)
+		(popup-menu*
+		 names :point (point)))))
+	(when selected-name
+	  (save-excursion
+	    (when (not (equal selected-name name))
+	      (goto-char name-start)
+	      (delete-char (- name-end name-start))
+	      (insert (get-text-property
+		       0 'local-name selected-name)))
+	    (let ((qual-name
+		   (ensime-strip-dollar-signs
+		    (ensime-kill-txt-props selected-name))))
+	      (ensime-insert-import qual-name)
+	      (ensime-typecheck-current-file)
+	      ))
+	  )))
+    ))
+
 ;; Source Formatting
 
 (defun ensime-format-source ()
@@ -2586,13 +2676,14 @@ with the current project's dependencies loaded. Returns a property list."
      ,(or prefix "")
      ,is-constructor)))
 
-(defun ensime-rpc-async-import-suggestions-at-point (names continue)
-  (ensime-eval-async
+(defun ensime-rpc-import-suggestions-at-point (names max-results)
+  (ensime-eval
    `(swank:import-suggestions
      ,buffer-file-name
      ,(ensime-computed-point)
      ,names
-     ) continue))
+     ,max-results
+     )))
 
 (defun ensime-rpc-async-public-symbol-search
   (names max-results continue)
@@ -2664,9 +2755,15 @@ with the current project's dependencies loaded. Returns a property list."
   (ensime-eval
    `(swank:exec-undo ,id)))
 
-(defun ensime-rpc-refactor-perform (proc-id refactor-type params continue)
-  (ensime-eval-async
-   `(swank:perform-refactor ,proc-id , refactor-type ,params) continue))
+(defun ensime-rpc-refactor-perform
+  (proc-id refactor-type params non-interactive continue blocking)
+  (if blocking
+      (ensime-eval
+       `(swank:perform-refactor
+	 ,proc-id ,refactor-type ,params ,(not non-interactive)))
+    (ensime-eval-async
+     `(swank:perform-refactor
+       ,proc-id ,refactor-type ,params ,(not non-interactive)) continue)))
 
 (defun ensime-rpc-refactor-exec (proc-id refactor-type continue)
   (ensime-eval-async `(swank:exec-refactor ,proc-id , refactor-type) continue))

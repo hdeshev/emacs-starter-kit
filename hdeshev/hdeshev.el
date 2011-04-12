@@ -70,6 +70,12 @@
   (global-set-key (kbd "<C-f3>") 'ack)
   (global-set-key (kbd "<f3>") 'ack-find-file))
 
+(defun my-startup ()
+  (kill-buffer "*scratch*")
+  (ack-shortcuts))
+
+(add-hook 'emacs-startup-hook 'my-startup)
+
 (global-set-key (kbd "<f7>") 'save-and-build-scala)
 ;; (global-set-key (kbd "<C-x s>") 'save-all)
 
